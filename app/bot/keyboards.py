@@ -1,0 +1,98 @@
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+def main_menu_kb() -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="➕ Добавить показатель")],
+            [KeyboardButton(text="📖 История"), KeyboardButton(text="⏰ Напоминания")],
+        ],
+        resize_keyboard=True,
+        input_field_placeholder="Выберите действие…",
+    )
+
+def measurement_type_kb() -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="🩸 Давление"), KeyboardButton(text="❤️ Пульс")],
+            [KeyboardButton(text="🌡 Температура")],
+            [KeyboardButton(text="⬅️ Назад")],
+        ],
+        resize_keyboard=True,
+        input_field_placeholder="Выберите показатель…",
+    )
+
+def remove_kb():
+    return ReplyKeyboardRemove()
+
+def history_filter_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Сегодня", callback_data="hist:filter:today"),
+                InlineKeyboardButton(text="7 дней", callback_data="hist:filter:7d"),
+                InlineKeyboardButton(text="Все", callback_data="hist:filter:all"),
+            ],
+            [InlineKeyboardButton(text="📅 Период…", callback_data="hist:filter:range")],
+        ]
+    )
+
+def history_page_kb(page: int, total: int, page_size: int, flt: str) -> InlineKeyboardMarkup:
+    # page 0-based
+    max_page = (max(total - 1, 0) // page_size) if total > 0 else 0
+    buttons = []
+
+    prev_disabled = (page <= 0)
+    next_disabled = (page >= max_page)
+
+    row = []
+    row.append(
+        InlineKeyboardButton(
+            text="⬅️" if not prev_disabled else " ",
+            callback_data=f"hist:page:{page-1}:{flt}" if not prev_disabled else "hist:noop"
+        )
+    )
+    row.append(InlineKeyboardButton(text=f"{page+1}/{max_page+1}", callback_data="hist:noop"))
+    row.append(
+        InlineKeyboardButton(
+            text="➡️" if not next_disabled else " ",
+            callback_data=f"hist:page:{page+1}:{flt}" if not next_disabled else "hist:noop"
+        )
+    )
+    buttons.append(row)
+
+    buttons.append([InlineKeyboardButton(text="🔎 Фильтр", callback_data="hist:open_filters")])
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+def reminders_menu_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="➕ Добавить", callback_data="rem:add")],
+            [InlineKeyboardButton(text="🔄 Обновить список", callback_data="rem:list")],
+        ]
+    )
+
+def reminders_list_kb(items) -> InlineKeyboardMarkup:
+    rows = []
+    for r in items:
+        status = "✅" if r.enabled else "⛔"
+        rows.append([
+            InlineKeyboardButton(text=f"{status} {r.time.strftime('%H:%M')}", callback_data=f"rem:toggle:{r.id}"),
+            InlineKeyboardButton(text="🗑", callback_data=f"rem:del:{r.id}")
+        ])
+    rows.append([InlineKeyboardButton(text="➕ Добавить", callback_data="rem:add")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+def back_kb() -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text="⬅️ Назад")]],
+        resize_keyboard=True,
+        input_field_placeholder="Можно написать: отмена",
+    )
+
+def menu_kb() -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text="🏠 Меню")]],
+        resize_keyboard=True,
+    )
