@@ -40,29 +40,33 @@ def history_filter_kb() -> InlineKeyboardMarkup:
         ]
     )
 
-def history_page_kb(page: int, total: int, page_size: int, flt: str) -> InlineKeyboardMarkup:
-    # page 0-based
+def history_page_kb(page: int, total: int, page_size: int, flt: str, items=None) -> InlineKeyboardMarkup:
     max_page = (max(total - 1, 0) // page_size) if total > 0 else 0
     buttons = []
 
+    # строки редактирования/удаления (по 10 записей максимум)
+    if items:
+        for idx, m in enumerate(items, start=1):
+            buttons.append([
+                InlineKeyboardButton(text=f"✏️ {idx}", callback_data=f"hist:edit:{m.id}:{page}:{flt}"),
+                InlineKeyboardButton(text=f"🗑 {idx}", callback_data=f"hist:del:{m.id}:{page}:{flt}"),
+            ])
+
+    # пагинация
     prev_disabled = (page <= 0)
     next_disabled = (page >= max_page)
 
-    row = []
-    row.append(
+    buttons.append([
         InlineKeyboardButton(
             text="⬅️" if not prev_disabled else " ",
             callback_data=f"hist:page:{page-1}:{flt}" if not prev_disabled else "hist:noop"
-        )
-    )
-    row.append(InlineKeyboardButton(text=f"{page+1}/{max_page+1}", callback_data="hist:noop"))
-    row.append(
+        ),
+        InlineKeyboardButton(text=f"{page+1}/{max_page+1}", callback_data="hist:noop"),
         InlineKeyboardButton(
             text="➡️" if not next_disabled else " ",
             callback_data=f"hist:page:{page+1}:{flt}" if not next_disabled else "hist:noop"
         )
-    )
-    buttons.append(row)
+    ])
 
     buttons.append([InlineKeyboardButton(text="🔎 Фильтр", callback_data="hist:open_filters")])
 
@@ -123,5 +127,22 @@ def stats_period_kb(metric: str) -> InlineKeyboardMarkup:
             ],
             [InlineKeyboardButton(text="📅 Период…", callback_data=f"stats:period:{metric}:range")],
             [InlineKeyboardButton(text="⬅️ Назад", callback_data="stats:back")],
+        ]
+    )
+
+def confirm_delete_kb(mid: int, page: int, flt: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="✅ Да, удалить", callback_data=f"hist:del_yes:{mid}:{page}:{flt}"),
+                InlineKeyboardButton(text="❌ Нет", callback_data=f"hist:del_no:{page}:{flt}"),
+            ]
+        ]
+    )
+
+def edit_cancel_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="❌ Отмена", callback_data="hist:edit_cancel")]
         ]
     )

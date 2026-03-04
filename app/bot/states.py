@@ -12,3 +12,6 @@ class Reminders(StatesGroup):
 
 class Stats(StatesGroup):
     entering_range = State()
+
+class EditMeasurement(StatesGroup):
+    entering_value = State()
