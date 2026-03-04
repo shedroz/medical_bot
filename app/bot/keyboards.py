@@ -16,7 +16,9 @@ def measurement_type_kb() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="🩸 Давление"), KeyboardButton(text="❤️ Пульс")],
-            [KeyboardButton(text="🌡 Температура")],
+            [KeyboardButton(text="🌡 Температура"), KeyboardButton(text="⚖️ Вес")],
+            [KeyboardButton(text="🫁 SpO₂"), KeyboardButton(text="🍬 Глюкоза")],
+            [KeyboardButton(text="😴 Сон"), KeyboardButton(text="😌 Самочувствие")],
             [KeyboardButton(text="⬅️ Назад")],
         ],
         resize_keyboard=True,
@@ -104,6 +106,11 @@ def stats_menu_kb() -> InlineKeyboardMarkup:
             [InlineKeyboardButton(text="🌡 Температура", callback_data="stats:metric:temperature")],
             [InlineKeyboardButton(text="❤️ Пульс", callback_data="stats:metric:pulse")],
             [InlineKeyboardButton(text="🩸 Давление", callback_data="stats:metric:pressure")],
+            [InlineKeyboardButton(text="⚖️ Вес", callback_data="stats:metric:weight")],
+            [InlineKeyboardButton(text="🫁 SpO₂", callback_data="stats:metric:spo2")],
+            [InlineKeyboardButton(text="🍬 Глюкоза", callback_data="stats:metric:glucose")],
+            [InlineKeyboardButton(text="😴 Сон", callback_data="stats:metric:sleep")],
+            [InlineKeyboardButton(text="😌 Самочувствие", callback_data="stats:metric:wellbeing")],
         ]
     )
 

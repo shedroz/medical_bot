@@ -26,17 +26,21 @@ async def add_measurement(
     systolic: int | None = None,
     diastolic: int | None = None,
     measured_at: datetime | None = None,
+    unit: str | None = None,
+    note: str | None = None,
 ):
     user = await get_or_create_user(session, tg_id)
 
     measurement = Measurement(
-        user_id=user.id,
-        type=m_type,
-        value_num=value_num,
-        systolic=systolic,
-        diastolic=diastolic,
-        measured_at=measured_at or datetime.now(timezone.utc),
-    )
+    user_id=user.id,
+    type=m_type,
+    value_num=value_num,
+    systolic=systolic,
+    diastolic=diastolic,
+    unit=unit,
+    note=note,
+    measured_at=measured_at or datetime.now(timezone.utc),
+)
     session.add(measurement)
     await session.commit()
     await session.refresh(measurement)

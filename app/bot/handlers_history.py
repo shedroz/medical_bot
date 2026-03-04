@@ -9,11 +9,22 @@ from app.db.session import SessionMaker
 from app.db.repo import list_measurements
 from .keyboards import history_filter_kb, history_page_kb, main_menu_kb, back_kb
 from .states import History
-
+from aiogram.exceptions import TelegramBadRequest
 router = Router()
 
 LOCAL_TZ = datetime.now().astimezone().tzinfo
 PAGE_SIZE = 10
+
+LABELS = {
+    "pressure": ("Давление", None),
+    "pulse": ("Пульс", "уд/мин"),
+    "temperature": ("Температура", "°C"),
+    "weight": ("Вес", "кг"),
+    "spo2": ("SpO₂", "%"),
+    "glucose": ("Глюкоза", "ммоль/л"),
+    "sleep": ("Сон", "ч"),
+    "wellbeing": ("Самочувствие", "балл"),
+} 
 
 # flt (строка) будем кодировать так:
 # "all" | "today" | "7d" | "range:YYYY-MM-DD:YYYY-MM-DD"
@@ -24,49 +35,53 @@ def _parse_filter(flt: str) -> tuple[datetime | None, datetime | None]:
         return None, None
 
     if flt == "today":
-        start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        end = start + timedelta(days=1)
-        return start, end
+        start_local = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_local = start_local + timedelta(days=1)
+        return start_local.astimezone(timezone.utc), end_local.astimezone(timezone.utc)
 
     if flt == "7d":
-        start = now - timedelta(days=7)
-        return start, None
+        start_local = now - timedelta(days=7)
+        return start_local.astimezone(timezone.utc), None
 
     if flt.startswith("range:"):
         _, a, b = flt.split(":")
         d1 = datetime.fromisoformat(a).date()
         d2 = datetime.fromisoformat(b).date()
-        start = datetime(d1.year, d1.month, d1.day, tzinfo=LOCAL_TZ)
-        end = datetime(d2.year, d2.month, d2.day, tzinfo=LOCAL_TZ) + timedelta(days=1)
-        return start, end
+        start_local = datetime(d1.year, d1.month, d1.day, tzinfo=LOCAL_TZ)
+        end_local = datetime(d2.year, d2.month, d2.day, tzinfo=LOCAL_TZ) + timedelta(days=1)
+        return start_local.astimezone(timezone.utc), end_local.astimezone(timezone.utc)
 
     return None, None
 
-def _format_measurements(items) -> str:
-    if not items:
-        return "Записей нет по выбранному фильтру."
+def _format_measurements(rows):
+    lines = []
 
-    lines = ["<b>История измерений:</b>\n"]
-    for m in items:
+    for m in rows:
+        label, default_unit = LABELS.get(m.type, (m.type, ""))
+
+        # переводим время в локальное
         dt = m.measured_at
-        # если вдруг пришло naive — считаем, что это UTC
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
 
-        dt_local = dt.astimezone(LOCAL_TZ)
-        dt_str = dt_local.strftime("%Y-%m-%d %H:%M")
+        dt_str = dt.astimezone(LOCAL_TZ).strftime("%Y-%m-%d %H:%M")
 
+        # давление
         if m.type == "pressure":
-            val = f"{m.systolic}/{m.diastolic}" if m.systolic and m.diastolic else "-"
-            label = "Давление"
-        elif m.type == "pulse":
-            val = f"{int(float(m.value_num))}" if m.value_num is not None else "-"
-            label = "Пульс"
-        else:
-            val = f"{float(m.value_num):.1f}" if m.value_num is not None else "-"
-            label = "Температура"
+            if m.systolic is not None and m.diastolic is not None:
+                value = f"{m.systolic}/{m.diastolic}"
+            else:
+                value = "-"
 
-        lines.append(f"• {dt_str} — <b>{label}</b>: {val}")
+        # остальные показатели
+        else:
+            if m.value_num is None:
+                value = "-"
+            else:
+                unit = m.unit if m.unit else default_unit
+                value = f"{m.value_num:g} {unit}".strip()
+
+        lines.append(f"{dt_str} — {label}: {value}")
 
     return "\n".join(lines)
 
@@ -86,13 +101,24 @@ async def _send_history(target: Message | CallbackQuery, tg_id: int, page: int, 
         )
 
     text = _format_measurements(items)
+    if not items:
+        text = "Пока нет записей 📭\n\nНажми «➕ Добавить показатель», чтобы добавить первую."
     kb = history_page_kb(page=page, total=total, page_size=PAGE_SIZE, flt=flt)
 
     if isinstance(target, CallbackQuery):
-        await target.message.edit_text(text, reply_markup=kb)
+        try:
+            await target.message.edit_text(text, reply_markup=kb)
+        except TelegramBadRequest as e:
+            print("EDIT_TEXT ERROR:", str(e))
+            # fallback: отправим новым сообщением
+            await target.message.answer(text, reply_markup=kb)
         await target.answer()
     else:
-        await target.answer(text, reply_markup=kb)
+        try:
+            await target.answer(text, reply_markup=kb)
+        except TelegramBadRequest as e:
+            print("ANSWER ERROR:", str(e))
+            await target.answer("Не смогла показать историю (ошибка Telegram).", reply_markup=main_menu_kb())
 
 
 @router.message(F.text.contains("История"))

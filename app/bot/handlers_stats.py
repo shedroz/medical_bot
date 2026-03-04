@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, BufferedInputFile
 from aiogram.fsm.context import FSMContext
+from aiogram.types import Message, CallbackQuery, BufferedInputFile
 
 from app.db.session import SessionMaker
 from app.db.stats_repo import get_line_points, get_pressure_points
@@ -12,6 +13,19 @@ from .keyboards import stats_menu_kb, stats_period_kb, main_menu_kb, back_kb
 from .states import Stats
 
 router = Router()
+
+# title, y_label, filename
+STATS_META = {
+    "temperature": ("Температура", "°C", "temperature.png"),
+    "pulse": ("Пульс", "уд/мин", "pulse.png"),
+    "weight": ("Вес", "кг", "weight.png"),
+    "spo2": ("SpO₂", "%", "spo2.png"),
+    "glucose": ("Глюкоза", "ммоль/л", "glucose.png"),
+    "sleep": ("Сон", "ч", "sleep.png"),
+    "wellbeing": ("Самочувствие", "балл", "wellbeing.png"),
+}
+
+CANCEL_WORDS = {"отмена", "cancel", "стоп", "stop"}
 
 
 def _period_to_range(period: str) -> tuple[datetime | None, datetime | None]:
@@ -24,7 +38,6 @@ def _period_to_range(period: str) -> tuple[datetime | None, datetime | None]:
 
 
 def _parse_user_range(text: str) -> tuple[datetime, datetime]:
-    # принимает: YYYY-MM-DD или YYYY-MM-DD YYYY-MM-DD
     parts = text.strip().split()
     if len(parts) == 1:
         d1 = datetime.fromisoformat(parts[0]).date()
@@ -40,7 +53,6 @@ def _parse_user_range(text: str) -> tuple[datetime, datetime]:
     start_local = datetime(d1.year, d1.month, d1.day, tzinfo=LOCAL_TZ)
     end_local = datetime(d2.year, d2.month, d2.day, tzinfo=LOCAL_TZ) + timedelta(days=1)
 
-    # в БД у нас UTC → фильтры тоже переводим в UTC
     return start_local.astimezone(timezone.utc), end_local.astimezone(timezone.utc)
 
 
@@ -57,7 +69,7 @@ async def stats_back(call: CallbackQuery):
 
 @router.callback_query(F.data.startswith("stats:metric:"))
 async def stats_choose_metric(call: CallbackQuery):
-    metric = call.data.split(":")[-1]  # temperature/pulse/pressure
+    metric = call.data.split(":")[-1]
     await call.message.edit_text("Выбери период:", reply_markup=stats_period_kb(metric))
     await call.answer()
 
@@ -89,7 +101,7 @@ async def stats_choose_period(call: CallbackQuery, state: FSMContext):
 @router.message(Stats.entering_range)
 async def stats_enter_range(message: Message, state: FSMContext):
     txt = (message.text or "").strip().lower()
-    if txt in ("отмена", "cancel", "стоп", "stop"):
+    if txt in CANCEL_WORDS:
         await state.clear()
         await message.answer("Ок ✅ Отменено.", reply_markup=main_menu_kb())
         return
@@ -108,29 +120,23 @@ async def stats_enter_range(message: Message, state: FSMContext):
         return
 
     await state.clear()
-    # тут отправляем как обычному message (не callback)
     await _send_plot(message, metric, date_from, date_to)
 
 
 async def _send_plot(target: Message | CallbackQuery, metric: str, date_from: datetime | None, date_to: datetime | None):
-    tg_id = target.from_user.id if isinstance(target, CallbackQuery) else target.from_user.id
+    tg_id = target.from_user.id
 
     async with SessionMaker() as session:
-        if metric in ("temperature", "pulse"):
-            points = await get_line_points(session, tg_id, metric, date_from, date_to)
-            if metric == "temperature":
-                buf = plot_line(points, "Температура", "°C")
-                filename = "temperature.png"
-                caption = "📈 Температура"
-            else:
-                buf = plot_line(points, "Пульс", "уд/мин")
-                filename = "pulse.png"
-                caption = "📈 Пульс"
-        else:
+        if metric == "pressure":
             points = await get_pressure_points(session, tg_id, date_from, date_to)
             buf = plot_pressure(points)
             filename = "pressure.png"
             caption = "📈 Давление (SYS/DIA)"
+        else:
+            title, y_label, filename = STATS_META.get(metric, (metric, "", f"{metric}.png"))
+            points = await get_line_points(session, tg_id, metric, date_from, date_to)
+            buf = plot_line(points, title, y_label)
+            caption = f"📈 {title}"
 
     photo = BufferedInputFile(buf.getvalue(), filename=filename)
 
