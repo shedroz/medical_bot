@@ -5,6 +5,7 @@ from .handlers_start import router as start_router
 from .handlers_measurements import router as meas_router
 from .handlers_history import router as hist_router
 from .handlers_reminders import router as rem_router
+from .handlers_stats import router as stats_router
 
 def setup_routers() -> Router:
     root = Router()
@@ -13,4 +14,5 @@ def setup_routers() -> Router:
     root.include_router(meas_router)
     root.include_router(hist_router)
     root.include_router(rem_router)
+    root.include_router(stats_router)
     return root

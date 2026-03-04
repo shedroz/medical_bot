@@ -6,6 +6,7 @@ def main_menu_kb() -> ReplyKeyboardMarkup:
         keyboard=[
             [KeyboardButton(text="➕ Добавить показатель")],
             [KeyboardButton(text="📖 История"), KeyboardButton(text="⏰ Напоминания")],
+            [KeyboardButton(text="📈 Статистика")],
         ],
         resize_keyboard=True,
         input_field_placeholder="Выберите действие…",
@@ -95,4 +96,25 @@ def menu_kb() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[[KeyboardButton(text="🏠 Меню")]],
         resize_keyboard=True,
+    )
+
+def stats_menu_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="🌡 Температура", callback_data="stats:metric:temperature")],
+            [InlineKeyboardButton(text="❤️ Пульс", callback_data="stats:metric:pulse")],
+            [InlineKeyboardButton(text="🩸 Давление", callback_data="stats:metric:pressure")],
+        ]
+    )
+
+def stats_period_kb(metric: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="7 дней", callback_data=f"stats:period:{metric}:7d"),
+                InlineKeyboardButton(text="30 дней", callback_data=f"stats:period:{metric}:30d"),
+            ],
+            [InlineKeyboardButton(text="📅 Период…", callback_data=f"stats:period:{metric}:range")],
+            [InlineKeyboardButton(text="⬅️ Назад", callback_data="stats:back")],
+        ]
     )

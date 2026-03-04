@@ -9,3 +9,6 @@ class History(StatesGroup):
 
 class Reminders(StatesGroup):
     entering_time = State()
+
+class Stats(StatesGroup):
+    entering_range = State()
