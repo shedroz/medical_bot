@@ -5,15 +5,20 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 load_dotenv()
 
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "medical_bot")
-DB_USER = os.getenv("DB_USER", "botuser")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "botpass")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-DATABASE_URL = (
-    f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+if DATABASE_URL:
+    # Railway иногда даёт postgresql://, а SQLAlchemy async нужен postgresql+asyncpg://
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+else:
+    DATABASE_URL = (
+        f"postgresql+asyncpg://"
+        f"{os.getenv('DB_USER')}:"
+        f"{os.getenv('DB_PASSWORD')}@"
+        f"{os.getenv('DB_HOST')}:"
+        f"{os.getenv('DB_PORT')}/"
+        f"{os.getenv('DB_NAME')}"
+    )
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 SessionMaker = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
