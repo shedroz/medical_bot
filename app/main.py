@@ -6,6 +6,9 @@ from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 from app.bot.reminder_worker import reminder_worker
+from app.db.base import Base
+from app.db.session import engine
+import app.db.models
 
 from app.bot.routers import setup_routers
 
@@ -27,6 +30,10 @@ async def main():
         await dp.start_polling(bot)
     finally:
         task.cancel()
+    
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
     await dp.start_polling(bot)
 
 
