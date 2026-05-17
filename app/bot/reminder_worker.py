@@ -5,9 +5,11 @@ from aiogram import Bot
 
 from app.db.session import SessionMaker
 from app.db.reminders_repo import due_reminders, mark_sent
+import os
+from zoneinfo import ZoneInfo
 
-LOCAL_TZ = datetime.now().astimezone().tzinfo
-
+APP_TIMEZONE = os.getenv("APP_TIMEZONE", "Europe/Moscow")
+LOCAL_TZ = ZoneInfo(APP_TIMEZONE)
 
 async def reminder_worker(bot: Bot):
     """Каждую минуту проверяем напоминания."""

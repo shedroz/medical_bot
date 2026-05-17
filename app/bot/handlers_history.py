@@ -14,10 +14,15 @@ from aiogram.exceptions import TelegramBadRequest
 import re
 from app.db.measurements_repo import get_measurement_for_user, delete_measurement_for_user, update_measurement_for_user
 from .states import EditMeasurement
+import os
+from zoneinfo import ZoneInfo
+
 
 router = Router()
 
-LOCAL_TZ = datetime.now().astimezone().tzinfo
+APP_TIMEZONE = os.getenv("APP_TIMEZONE", "Europe/Moscow")
+LOCAL_TZ = ZoneInfo(APP_TIMEZONE)
+
 PAGE_SIZE = 10
 
 LABELS = {
