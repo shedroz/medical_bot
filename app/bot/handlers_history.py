@@ -329,7 +329,6 @@ async def hist_edit_start(call: CallbackQuery, state: FSMContext):
             f"Введи новое значение для <b>{cfg['label']}</b> ({cfg['unit']}):"
         )
 
-    await call.message.answer(prompt, reply_markup=back_kb())
     await call.message.answer("Отмена:", reply_markup=edit_cancel_kb())
     await call.answer()
 
