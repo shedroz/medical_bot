@@ -25,7 +25,7 @@ class Measurement(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
 
-    # тип показателя: pressure / pulse / temperature (пока строкой, потом можно Enum)
+    # тип показателя: pressure / pulse / temperature 
     type: Mapped[str] = mapped_column(String(32), nullable=False)
 
     # универсально: число (пульс, температура)

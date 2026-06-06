@@ -14,7 +14,6 @@ from .states import Stats
 
 router = Router()
 
-# title, y_label, filename
 STATS_META = {
     "temperature": ("Температура", "°C", "temperature.png"),
     "pulse": ("Пульс", "уд/мин", "pulse.png"),

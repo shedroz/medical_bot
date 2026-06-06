@@ -26,7 +26,7 @@ async def reminder_worker(bot: Bot):
                             "⏰ Напоминание: внеси медицинские показатели (давление/пульс/температура).",
                         )
                         await mark_sent(session, reminder_id, now_local)
-                        print("[worker] sent to", tg_id, "reminder", reminder_id)  # ✅ лог отправки
+                        print("[worker] sent to", tg_id, "reminder", reminder_id)  # лог отправки
                     except Exception as e:
                         print("[worker] send error:", repr(e))
 

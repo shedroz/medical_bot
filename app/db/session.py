@@ -8,7 +8,6 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
-    # Railway иногда даёт postgresql://, а SQLAlchemy async нужен postgresql+asyncpg://
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 else:
     DATABASE_URL = (

@@ -15,7 +15,7 @@ async def _get_user_id(session: AsyncSession, tg_id: int) -> int | None:
 async def get_line_points(
     session: AsyncSession,
     tg_id: int,
-    m_type: str,  # "temperature" | "pulse"
+    m_type: str,
     date_from: datetime | None,
     date_to: datetime | None,
 ) -> list[tuple[datetime, float]]:

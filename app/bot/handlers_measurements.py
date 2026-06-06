@@ -58,7 +58,6 @@ async def add_measurement_choose_type(message: Message, state: FSMContext):
         prompt = "Введи давление в формате <b>120/80</b>:"
     else:
         cfg = METRICS[m_type]
-        # можно добавить примеры по каждому показателю, но пока универсально
         prompt = f"Введи <b>{cfg['label']}</b> ({cfg['unit']})."
 
     await message.answer(prompt, reply_markup=back_kb())
@@ -90,7 +89,7 @@ async def add_measurement_enter_value(message: Message, state: FSMContext):
     systolic: int | None = None
     diastolic: int | None = None
     unit: str | None = None
-    note: str | None = None  # на будущее
+    note: str | None = None
 
     if m_type == "pressure":
         m = PRESSURE_RE.match(text)

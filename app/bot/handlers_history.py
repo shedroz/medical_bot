@@ -144,7 +144,7 @@ def _format_measurements(rows):
                 unit = m.unit if m.unit else default_unit
                 value = f"{m.value_num:g} {unit}".strip()
 
-        # 1 строка на запись (очень читаемо)
+        # 1 строка на запись
         lines.append(f"<b>{i})</b> {time_str}  {icon} <b>{label}</b>: {value}")
 
     return "\n".join(lines).strip()

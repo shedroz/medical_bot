@@ -69,7 +69,7 @@ async def list_measurements(
         q = q.where(Measurement.measured_at >= date_from)
         cq = cq.where(Measurement.measured_at >= date_from)
     if date_to is not None:
-        q = q.where(Measurement.measured_at < date_to)  # date_to как "исключая верхнюю границу"
+        q = q.where(Measurement.measured_at < date_to)
         cq = cq.where(Measurement.measured_at < date_to)
 
     q = q.order_by(Measurement.measured_at.desc()).limit(limit).offset(offset)

@@ -23,7 +23,7 @@ async def start_handler(message: Message):
     )
 
 
-# чтобы меню показывалось и по кнопке "Назад/Меню" (если потом добавим)
+# чтобы меню показывалось и по кнопке "Назад/Меню"
 @router.message(F.text.lower().in_(["меню", "main menu"]))
 async def menu_handler(message: Message):
     await message.answer("Главное меню 👇", reply_markup=main_menu_kb())
