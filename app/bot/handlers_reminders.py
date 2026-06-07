@@ -1,5 +1,4 @@
 import re
-from datetime import datetime
 
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext

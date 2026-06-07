@@ -10,7 +10,7 @@ from .states import AddMeasurement
 
 router = Router()
 
-# Кнопка -> тип в БД (ДОЛЖНО совпадать с текстом кнопок в measurement_type_kb)
+# Кнопка -> тип в БД
 TYPE_MAP = {
     "🩸 Давление": "pressure",
     "❤️ Пульс": "pulse",

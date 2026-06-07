@@ -1,7 +1,7 @@
 from __future__ import annotations
-from datetime import datetime, timezone
+from datetime import datetime
 
-from sqlalchemy import select, delete, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import User, Measurement

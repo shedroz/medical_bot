@@ -54,17 +54,14 @@ async def list_measurements(
     date_from: datetime | None = None,
     date_to: datetime | None = None,
 ) -> tuple[list[Measurement], int]:
-    # получаем user
     user_res = await session.execute(select(User).where(User.tg_id == tg_id))
     user = user_res.scalar_one_or_none()
     if user is None:
         return [], 0
 
-    # базовый запрос
     q = select(Measurement).where(Measurement.user_id == user.id)
     cq = select(func.count()).select_from(Measurement).where(Measurement.user_id == user.id)
 
-    # фильтр по датам
     if date_from is not None:
         q = q.where(Measurement.measured_at >= date_from)
         cq = cq.where(Measurement.measured_at >= date_from)

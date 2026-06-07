@@ -25,12 +25,9 @@ class Measurement(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
 
-    # тип показателя: pressure / pulse / temperature 
     type: Mapped[str] = mapped_column(String(32), nullable=False)
 
-    # универсально: число (пульс, температура)
     value_num: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
-    # для давления удобно хранить "120/80"
     systolic: Mapped[int | None] = mapped_column(Integer, nullable=True)
     diastolic: Mapped[int | None] = mapped_column(Integer, nullable=True)
     unit: Mapped[str | None] = mapped_column(String(16), nullable=True)

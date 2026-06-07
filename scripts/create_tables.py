@@ -2,7 +2,7 @@ import asyncio
 
 from app.db.base import Base
 from app.db.session import engine
-import app.db.models  # важно: чтобы модели зарегистрировались в metadata
+import app.db.models
 
 
 async def main():

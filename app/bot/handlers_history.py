@@ -59,7 +59,7 @@ ICONS = {
     "wellbeing": "😌",
 }
 
-# flt (строка) будем кодировать так:
+# flt (строка) кодируетс так:
 # "all" | "today" | "7d" | "range:YYYY-MM-DD:YYYY-MM-DD"
 def _parse_filter(flt: str) -> tuple[datetime | None, datetime | None]:
     now = datetime.now(LOCAL_TZ)
@@ -123,14 +123,12 @@ def _format_measurements(rows):
         dt_local = dt.astimezone(LOCAL_TZ)
         day_key = dt_local.date()
 
-        # Заголовок дня
         if last_day != day_key:
             lines.append(f"\n📅 <b>{dt_local.strftime('%d.%m.%Y')}</b>")
             last_day = day_key
 
         time_str = dt_local.strftime("%H:%M")
 
-        # значение
         if m.type == "pressure":
             value = (
                 f"{m.systolic}/{m.diastolic}"
@@ -144,7 +142,6 @@ def _format_measurements(rows):
                 unit = m.unit if m.unit else default_unit
                 value = f"{m.value_num:g} {unit}".strip()
 
-        # 1 строка на запись
         lines.append(f"<b>{i})</b> {time_str}  {icon} <b>{label}</b>: {value}")
 
     return "\n".join(lines).strip()
@@ -278,13 +275,11 @@ async def hist_delete_yes(call: CallbackQuery):
 
     await call.answer("Удалено ✅" if ok else "Не найдено")
 
-    # удалим сообщение с подтверждением (по желанию)
     try:
         await call.message.delete()
     except Exception:
         pass
 
-    # обновим историю
     await _send_history(call, tg_id=call.from_user.id, page=int(page), flt=flt)
 
 @router.callback_query(F.data.startswith("hist:del_no:"))
@@ -312,7 +307,7 @@ async def hist_edit_start(call: CallbackQuery, state: FSMContext):
     await state.set_state(EditMeasurement.entering_value)
     await state.update_data(mid=mid, page=int(page), flt=flt, m_type=m.type)
 
-    old_value = _format_one_value(m)  # <-- функция форматирования одной записи (должна быть в файле)
+    old_value = _format_one_value(m)
 
     if m.type == "pressure":
         prompt = (
@@ -411,8 +406,6 @@ async def hist_edit_enter_value(message: Message, state: FSMContext):
     await state.clear()
     await message.answer("✅ Обновлено!", reply_markup=main_menu_kb())
 
-    # можно автоматически показать обновлённую историю:
-    # (отправляем новым сообщением)
     await _send_history(message, tg_id=message.from_user.id, page=int(page), flt=str(flt))  
 
 @router.callback_query(F.data == "hist:edit_cancel")
