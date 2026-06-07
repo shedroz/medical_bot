@@ -45,7 +45,6 @@ async def update_measurement_for_user(
     if not m:
         return False
 
-    # обновляем поля
     m.value_num = value_num
     m.systolic = systolic
     m.diastolic = diastolic

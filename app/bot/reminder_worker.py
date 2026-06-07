@@ -12,7 +12,7 @@ APP_TIMEZONE = os.getenv("APP_TIMEZONE", "Europe/Moscow")
 LOCAL_TZ = ZoneInfo(APP_TIMEZONE)
 
 async def reminder_worker(bot: Bot):
-    """Каждую минуту проверяем напоминания."""
+    #Каждую минуту проверяем напоминания
     while True:
         now_local = datetime.now(LOCAL_TZ).replace(second=0, microsecond=0)
         try:

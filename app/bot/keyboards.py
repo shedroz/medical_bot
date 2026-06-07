@@ -140,6 +140,24 @@ def confirm_delete_kb(mid: int, page: int, flt: str) -> InlineKeyboardMarkup:
         ]
     )
 
+def confirm_reminder_delete_kb(reminder_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="✅ Да, удалить",
+                    callback_data=f"rem:del_yes:{reminder_id}"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="❌ Нет",
+                    callback_data="rem:del_no"
+                )
+            ]
+        ]
+    )
+
 def edit_cancel_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[

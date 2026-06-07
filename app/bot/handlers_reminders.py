@@ -7,7 +7,7 @@ from aiogram.types import Message, CallbackQuery
 
 from app.db.session import SessionMaker
 from app.db.reminders_repo import list_reminders, add_reminder, toggle_reminder, delete_reminder
-from .keyboards import main_menu_kb, reminders_menu_kb, reminders_list_kb, back_kb
+from .keyboards import main_menu_kb, reminders_menu_kb, reminders_list_kb, back_kb, confirm_reminder_delete_kb
 from .states import Reminders
 
 router = Router()
@@ -89,8 +89,37 @@ async def reminders_toggle(call: CallbackQuery):
 
 
 @router.callback_query(F.data.startswith("rem:del:"))
-async def reminders_delete(call: CallbackQuery):
-    reminder_id = int(call.data.split(":")[-1])
+async def reminder_delete_confirm(call: CallbackQuery):
+    reminder_id = int(call.data.split(":")[2])
+
+    await call.message.answer(
+        "❓ Точно удалить это напоминание?",
+        reply_markup=confirm_reminder_delete_kb(reminder_id)
+    )
+
+    await call.answer()
+
+@router.callback_query(F.data.startswith("rem:del_yes:"))
+async def reminder_delete_yes(call: CallbackQuery):
+    reminder_id = int(call.data.split(":")[2])
+
     async with SessionMaker() as session:
-        await delete_reminder(session, call.from_user.id, reminder_id)
-    await _show_list(call, call.from_user.id)
+        await delete_reminder(
+            session,
+            call.from_user.id,
+            reminder_id
+        )
+
+    await call.message.edit_text(
+        "✅ Напоминание удалено"
+    )
+
+    await call.answer()
+
+@router.callback_query(F.data == "rem:del_no")
+async def reminder_delete_no(call: CallbackQuery):
+    await call.message.edit_text(
+        "Удаление отменено."
+    )
+
+    await call.answer()

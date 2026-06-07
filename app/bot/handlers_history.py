@@ -174,7 +174,6 @@ async def _send_history(target: Message | CallbackQuery, tg_id: int, page: int, 
             await target.message.edit_text(text, reply_markup=kb)
         except TelegramBadRequest as e:
             print("EDIT_TEXT ERROR:", str(e))
-            # fallback: отправим новым сообщением
             await target.message.answer(text, reply_markup=kb)
         await target.answer()
     else:
