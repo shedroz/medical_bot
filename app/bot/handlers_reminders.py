@@ -104,22 +104,34 @@ async def reminder_delete_yes(call: CallbackQuery):
     reminder_id = int(call.data.split(":")[2])
 
     async with SessionMaker() as session:
-        await delete_reminder(
-            session,
-            call.from_user.id,
-            reminder_id
-        )
+        await delete_reminder(session, call.from_user.id, reminder_id)
 
-    await call.message.edit_text(
-        "✅ Напоминание удалено"
+    await call.answer("Удалено ✅")
+
+    try:
+        await call.message.delete()
+    except Exception:
+        pass
+
+    await call.message.answer(
+        "✅ Напоминание удалено",
+        reply_markup=main_menu_kb()
     )
 
-    await call.answer()
+    await _show_list(call.message, call.from_user.id)
 
 @router.callback_query(F.data == "rem:del_no")
 async def reminder_delete_no(call: CallbackQuery):
-    await call.message.edit_text(
-        "Удаление отменено."
+    await call.answer("Удаление отменено")
+
+    try:
+        await call.message.delete()
+    except Exception:
+        pass
+
+    await call.message.answer(
+        "Удаление отменено.",
+        reply_markup=main_menu_kb()
     )
 
-    await call.answer()
+    await _show_list(call.message, call.from_user.id)
